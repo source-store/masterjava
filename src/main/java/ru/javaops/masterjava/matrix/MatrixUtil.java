@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class MatrixUtil {
@@ -31,6 +32,35 @@ public class MatrixUtil {
                         })).get();
 
         return matrixC;
+    }
+
+    // TODO implement parallel multiplication matrixA*matrixB
+    public static int[][] concurrentMultiplyMy(int[][] matrixA, int[][] matrixB, ExecutorService executor) throws InterruptedException {
+        final int matrixSize = matrixA.length;
+        final int[][] matrixC = new int[matrixSize][matrixSize];
+
+        List<Callable<Void>> tasks = IntStream.range(0, matrixSize).parallel().mapToObj(task -> new Callable<Void>() {
+            private final int[] columnB = new int[matrixSize];
+
+            @Override
+            public Void call() {
+                for (int k = 0; k < matrixSize; k++) {
+                    columnB[k] = matrixB[k][task];
+                }
+                for (int row = 0; row < matrixSize; row++) {
+                    int rowA[] = matrixA[row];
+                    int sum = 0;
+                    for (int k = 0; k < matrixSize; k++) {
+                        sum += rowA[k] * columnB[k];
+                    }
+                    matrixC[row][task] = sum;
+                }
+                return null;
+            }
+        }).collect(Collectors.toList());
+        executor.invokeAll(tasks);
+        return matrixC;
+
     }
 
     public static int[][] concurrentMultiply(int[][] matrixA, int[][] matrixB, ExecutorService executor) throws InterruptedException, ExecutionException {

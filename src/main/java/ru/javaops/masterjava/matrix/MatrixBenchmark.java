@@ -73,6 +73,11 @@ public class MatrixBenchmark {
         return MatrixUtil.concurrentMultiply2(matrixA, matrixB, executor);
     }
 
+    @Benchmark
+    public int[][] concurrentMultiplyMy() throws Exception {
+        return MatrixUtil.concurrentMultiplyMy(matrixA, matrixB, executor);
+    }
+
     @Setup
     public void setup() {
         executor = Executors.newFixedThreadPool(threadNumber);
